@@ -312,6 +312,30 @@ var sendHEP3 = function(sipmsg,msg, rcinfo){
 
 
 
+/* UDP Socket Handler */
+
+var getSocket = function (type) {
+    if (undefined === socket) {
+        socket = dgram.createSocket(type);
+        socket.on('error', socketErrorHandler);
+        /**
+         * Handles socket's 'close' event,
+         * recover socket in case of unplanned closing.
+         */
+        var socketCloseHandler = function () {
+            if (socketUsers > 0) {
+                socket = undefined;
+                --socketUsers;
+                getSocket(type);
+            }
+        };
+        socket.on('close', socketCloseHandler);
+    }
+    return socket;
+}
+
+
+
 /* JSON _Bulk Buffer */
 
 var bufferSIP = function(data){
